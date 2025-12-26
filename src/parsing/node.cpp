@@ -3,8 +3,10 @@
 Node::Node(NODE_TYPE t, const std::string& content):m_type(t){
     if(t == NODE_TYPE::ELEMENT){
         m_tag_name = content;
+        m_text = "";
     }else{
         m_text = content;
+        m_tag_name = "";
     }
 }
 

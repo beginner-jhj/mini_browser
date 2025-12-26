@@ -44,6 +44,8 @@ std::shared_ptr<Node> parse(const std::vector<Token> &tokens)
             body->add_child(text_node);
             html->add_child(body);
 
+            root = html;
+
             stack.push_back(html);
             stack.push_back(body);
 
@@ -77,47 +79,7 @@ std::shared_ptr<Node> parse(const std::vector<Token> &tokens)
 
         else
         {
-            /*
-            <div>
-  <p>First</p>
-  <p>Second</p>
-</div>
-```
-
-**Pop 있을 때:**
-```
-START_TAG("div") → stack: [div]
-START_TAG("p") → stack: [div, p]
-TEXT("First") → p.appendChild("First")
-END_TAG("p") → pop → stack: [div]  ← 여기!
-START_TAG("p") → stack: [div, p]  ← 새로운 p
-TEXT("Second") → p.appendChild("Second")
-END_TAG("p") → pop → stack: [div]
-END_TAG("div") → pop → stack: []
-
-결과:
-div
- ├─ p → "First"
- └─ p → "Second"  ✅
-```
-
-**Pop 없을 때:**
-```
-START_TAG("div") → stack: [div]
-START_TAG("p") → stack: [div, p]
-TEXT("First") → p.appendChild("First")
-END_TAG("p") → stack: [div, p]  ← 그대로
-START_TAG("p") → stack: [div, p, p]  ← p 안에 또 p?
-TEXT("Second") → 첫 번째 p.appendChild("Second")
-
-결과:
-div
- └─ p
-     ├─ "First"
-     ├─ "Second"  ← 같은 p 안에!
-     └─ p  ← 이상한 중첩
-            */
-            stack.pop_back(); // 다음 노드를 어디에 추가 해야 하는지 알아야 함.
+            stack.pop_back();
         }
     }
 
