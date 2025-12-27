@@ -41,16 +41,17 @@ int main()
     auto tokens = tokenize(html3);
     auto tree3 = parse(tokens);
 
+    for(const auto& token:tokens){
+        std::cout << static_cast<int>(token.type) << "Value: " << token.value << std::endl;
+        for(const auto& [name, value]:token.attributes){
+            std::cout << "Name: "<<name << "," <<"Value: "<< value << std::endl;
+        }
+    }
+
     if (tree3->get_attribute("href") != "https://example.com")
     {
         std::cerr << "Test 3 FAILED: href attribute" << std::endl;
         return 1;
-    }
-
-    for(const auto& token:tokens){
-        for(const auto& [name, value]:token.attributes){
-            std::cout << name << "=" << value << "\n";
-        }
     }
 
     std::cout << "Test 3 PASSED" << std::endl;

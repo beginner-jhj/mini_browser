@@ -11,11 +11,11 @@ std::map<std::string, std::string> parse_attrubute(const std::string &to_parse)
             pos++;
         }
 
-        size_t equal_sign_pos = to_parse.find("=");
+        size_t equal_sign_pos = to_parse.find("=", pos);
 
         std::string attribute_name = to_parse.substr(pos, equal_sign_pos - pos);
 
-        pos = equal_sign_pos;
+        pos = equal_sign_pos+1;
 
         while (pos < to_parse.size() && to_parse[pos] == ' ')
         {
@@ -26,8 +26,9 @@ std::map<std::string, std::string> parse_attrubute(const std::string &to_parse)
         if (to_parse[pos] == '"' || to_parse[pos] == '\'')
         {
             char quote = to_parse[pos];
-            size_t closing_quote_pos = to_parse.substr(pos + 1).find(quote);
-            attribute_value = to_parse.substr(pos + 1, closing_quote_pos - pos - 1);
+            pos++;
+            size_t closing_quote_pos = to_parse.find(quote,pos);
+            attribute_value = to_parse.substr(pos, closing_quote_pos - pos);
             pos = closing_quote_pos + 1;
         }
         else
@@ -63,10 +64,22 @@ std::vector<Token> tokenize(const std::string &html)
                 else
                 {
                     std::string full_tag = html.substr(pos + 1, end_pos - pos - 1);
-                    size_t space_pos = full_tag.find(" ");
-                    std::string tag_name = html.substr(pos + 1, space_pos - pos);
-                    html.substr(space_pos);
-                    tokens.push_back({TOKEN_TYPE::START_TAG, html.substr(pos + 1, end_pos - pos - 1)});
+                    size_t space_pos = full_tag.find(' ');
+
+                    std::string tag_name;
+                    std::map<std::string, std::string> attrs;
+
+                    if (space_pos != std::string::npos)
+                    {
+                        tag_name = full_tag.substr(0, space_pos);
+                        std::string attr_string = full_tag.substr(space_pos + 1);
+                        attrs = parse_attrubute(attr_string);
+                    }
+                    else
+                    {
+                        tag_name = full_tag;
+                    }
+                    tokens.push_back({TOKEN_TYPE::START_TAG, tag_name, attrs});
                 }
                 pos = end_pos + 1;
             }
