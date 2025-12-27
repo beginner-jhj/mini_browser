@@ -45,11 +45,6 @@ int main(int argc, char *argv[])
         std::cout << "Children: " << tree->get_children().size() << std::endl;
     }
 
-    for (const auto &token : tokens)
-    {
-        std::cout << (int)token.type << ": " << token.value << std::endl;
-    }
-
     BrowserWidget widget;
     widget.set_document(tree);
     widget.resize(400, 300);

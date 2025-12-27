@@ -1,4 +1,5 @@
 #include "browser_widget.h"
+#include <iostream>
 
 BrowserWidget::BrowserWidget(QWidget *parent) : QWidget(parent), m_root(nullptr) {};
 
@@ -68,12 +69,14 @@ std::pair<int, int> BrowserWidget::draw_node(QPainter &painter, std::shared_ptr<
 
                 int child_x = x;
 
-                if(tag == "ol" || tag == "ul"){
+                if (tag == "ol" || tag == "ul")
+                {
                     child_x += LIST_INDENT;
                 }
 
-                else if(tag == "li"){
-                    painter.drawText(child_x, current_y+LINE_HEIGHT, "•");
+                else if (tag == "li")
+                {
+                    painter.drawText(child_x, current_y + LINE_HEIGHT, "•");
                     child_x += 15;
                 }
 
@@ -86,9 +89,13 @@ std::pair<int, int> BrowserWidget::draw_node(QPainter &painter, std::shared_ptr<
             }
             else
             {
+                apply_element_style(painter, tag);
+
                 auto [new_x, new_y] = draw_node(painter, child, current_x, current_y);
                 current_x = new_x;
                 current_y = new_y;
+
+                reset_style(painter);
             }
         }
     }
@@ -146,5 +153,5 @@ void BrowserWidget::reset_style(QPainter &painter)
     font.setItalic(false);
     font.setUnderline(false);
     painter.setFont(font);
-    painter.setPen(QColor("#000000")); 
+    painter.setPen(QColor("#000000"));
 }
