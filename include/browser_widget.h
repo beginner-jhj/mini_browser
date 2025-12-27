@@ -3,19 +3,30 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include <memory>
+#include <utility>
 #include "node.h"
 
-class BrowserWidget:public QWidget{
-    private:
-        std::shared_ptr<Node> m_root;
+class BrowserWidget : public QWidget
+{
+private:
+    static constexpr int LINE_HEIGHT = 20;
+    static constexpr int MARGIN_LEFT = 10;
+    static constexpr int FONT_SIZE_H1 = 32;
+    static constexpr int FONT_SIZE_H2 = 24;
+    static constexpr int FONT_SIZE_P = 16;
+    static constexpr int LIST_INDENT = 30;
+    std::shared_ptr<Node> m_root;
 
-        // Returns next Y position after drawing
-    int draw_node(QPainter& painter, std::shared_ptr<Node> node, int x, int y);
-    protected:
-        void paintEvent(QPaintEvent* event) override;
+    // Returns next Y position after drawing
+    std::pair<int, int> draw_node(QPainter &painter, std::shared_ptr<Node> node, int x, int y);
+    void apply_element_style(QPainter &painter, const std::string &tag);
+    void reset_style(QPainter &painter);
 
-    public:
-        explicit BrowserWidget(QWidget* parent=nullptr);
+protected:
+    void paintEvent(QPaintEvent *event) override;
 
-        void set_document(std::shared_ptr<Node> root);
+public:
+    explicit BrowserWidget(QWidget *parent = nullptr);
+
+    void set_document(std::shared_ptr<Node> root);
 };

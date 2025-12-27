@@ -15,26 +15,136 @@ void BrowserWidget::paintEvent(QPaintEvent *event)
     if (m_root != nullptr)
     {
 
-        draw_node(painter, m_root, 100, 0);
+        draw_node(painter, m_root, MARGIN_LEFT, 0);
     }
 }
 
-int BrowserWidget::draw_node(QPainter &painter, std::shared_ptr<Node> node, int x, int y)
+std::pair<int, int> BrowserWidget::draw_node(QPainter &painter, std::shared_ptr<Node> node, int x, int y)
 {
 
     int current_y = y;
+    int current_x = x;
+    int display_width = this->width();
     for (auto &child : node->get_children())
     {
         if (child->get_type() == NODE_TYPE::TEXT)
         {
             QString text_content = QString::fromStdString(child->get_text_content());
-            painter.drawText(x, current_y+20, text_content);
-            current_y+=20;
+
+            QFontMetrics fm(painter.font());
+
+            QStringList words = text_content.split(" ");
+            for (const QString &word : words)
+            {
+                QString word_with_space = word + " ";
+
+                int word_width = fm.horizontalAdvance(word_with_space);
+                if (current_x + word_width > display_width - MARGIN_LEFT)
+                {
+                    current_y += LINE_HEIGHT;
+                    current_x = x;
+                }
+
+                painter.drawText(current_x, current_y + LINE_HEIGHT, word_with_space);
+                current_x += word_width;
+            }
         }
         else
         {
-            current_y = draw_node(painter, child, x, current_y);
+            std::string tag = child->get_tag_name();
+            DISPLAY_TYPE display_type = child->get_display_type();
+
+            if (display_type == DISPLAY_TYPE::BLOCK)
+            {
+                if (current_x > x)
+                {
+                    current_y += LINE_HEIGHT;
+                    current_x = x;
+                }
+
+                QFont font = painter.font();
+
+                apply_element_style(painter, tag);
+
+                int child_x = x;
+
+                if(tag == "ol" || tag == "ul"){
+                    child_x += LIST_INDENT;
+                }
+
+                else if(tag == "li"){
+                    painter.drawText(child_x, current_y+LINE_HEIGHT, "•");
+                    child_x += 15;
+                }
+
+                auto [new_x, new_y] = draw_node(painter, child, child_x, current_y);
+
+                current_y = new_y + LINE_HEIGHT / 2;
+                current_x = x;
+
+                reset_style(painter);
+            }
+            else
+            {
+                auto [new_x, new_y] = draw_node(painter, child, current_x, current_y);
+                current_x = new_x;
+                current_y = new_y;
+            }
         }
     }
-    return current_y;
+    return {current_x, current_y};
+}
+
+void BrowserWidget::apply_element_style(QPainter &painter, const std::string &tag)
+{
+    QFont font = painter.font();
+
+    if (tag == "h1")
+    {
+        font.setPointSize(FONT_SIZE_H1);
+        font.setBold(true);
+    }
+    else if (tag == "h2")
+    {
+        font.setPointSize(FONT_SIZE_H2);
+        font.setBold(true);
+    }
+    else if (tag == "p")
+    {
+        font.setPointSize(FONT_SIZE_P);
+        font.setBold(false);
+    }
+    else if (tag == "strong")
+    {
+        font.setBold(true);
+    }
+    else if (tag == "em")
+    {
+        font.setItalic(true);
+    }
+    else if (tag == "strong")
+    {
+        font.setBold(true);
+    }
+    else if (tag == "em")
+    {
+        font.setItalic(true);
+    }
+    else if (tag == "a")
+    {
+        painter.setPen(QColor("#0066cc"));
+        font.setUnderline(true);
+    }
+    painter.setFont(font);
+}
+
+void BrowserWidget::reset_style(QPainter &painter)
+{
+    QFont font = painter.font();
+    font.setPointSize(FONT_SIZE_P);
+    font.setBold(false);
+    font.setItalic(false);
+    font.setUnderline(false);
+    painter.setFont(font);
+    painter.setPen(QColor("#000000")); 
 }

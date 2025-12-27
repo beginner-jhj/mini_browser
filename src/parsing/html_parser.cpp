@@ -92,5 +92,15 @@ std::shared_ptr<Node> create_node(const Token &token)
     {
         return std::make_shared<Node>(NODE_TYPE::TEXT, token.value);
     }
-    return std::make_shared<Node>(NODE_TYPE::ELEMENT, token.value);
+
+    auto node = std::make_shared<Node>(NODE_TYPE::ELEMENT, token.value);
+
+    if (!token.attributes.empty())
+    {
+        for (const auto &[name, value] : token.attributes)
+        {
+            node->set_attribute(name, value);
+        }
+    }
+    return node;
 }

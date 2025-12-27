@@ -9,8 +9,7 @@ set(CMAKE_AUTOMOC ON) # Qt meta-object compiler
 
 
 add_executable(browser 
-src/main.cpp 
-src/rendering/browser_widget.cpp)
+src/main.cpp)
 
 # Library: parsing logic
 add_library(parsing_lib

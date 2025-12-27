@@ -10,25 +10,25 @@ int main(int argc, char *argv[])
 
     std::string html = R"(
 <html>
-<head>
-    <title>My First Browser</title>
-</head>
 <body>
-    <h1>Welcome to MiniBrowser!</h1>
-    <p>This is a paragraph with some text.</p>
-    <div>
-        <p>Nested paragraph inside a div</p>
-        <p>Another nested paragraph</p>
-    </div>
-    <h2>Features</h2>
-    <p>Currently supports:</p>
-    <p>- HTML parsing</p>
-    <p>- DOM tree construction</p>
-    <p>- Basic text rendering</p>
-    <h2>Coming Soon</h2>
-    <p>CSS styling</p>
-    <p>Layout engine</p>
-    <p>And much more!</p>
+    <h1>My Page</h1>
+    <p>This is a paragraph with <strong>bold</strong> and <em>italic</em> text.</p>
+    
+    <h2>Shopping List</h2>
+    <ul>
+        <li>Milk</li>
+        <li>Eggs</li>
+        <li>Bread</li>
+    </ul>
+    
+    <h2>Instructions</h2>
+    <ol>
+        <li>First step</li>
+        <li>Second step</li>
+        <li>Third step</li>
+    </ol>
+    
+    <p>Visit <a href="https://example.com">this link</a> for more.</p>
 </body>
 </html>
 )";
