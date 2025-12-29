@@ -1,6 +1,6 @@
 #include <iostream>
 #include <QApplication>
-#include "browser_widget.h"
+#include "rendering/browser_widget.h"
 #include "html/html_parser.h"
 #include "html/html_tokenizer.h"
 

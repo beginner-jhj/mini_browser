@@ -1,4 +1,4 @@
-#include "browser_widget.h"
+#include "rendering/browser_widget.h"
 #include <iostream>
 
 BrowserWidget::BrowserWidget(QWidget *parent) : QWidget(parent), m_root(nullptr) {};
