@@ -17,7 +17,7 @@ add_library(parsing_lib
     src/html/html_parser.cpp
     src/html/node.cpp
     src/css/css_parser.cpp
-    src/styling/style_applier.cpp
+    src/css/style_applier.cpp
     src/util_functions.cpp
 )
 

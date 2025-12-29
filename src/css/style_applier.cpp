@@ -1,4 +1,4 @@
-#include "styling/style_applier.h"
+#include "css/style_applier.h"
 
 void apply_styles_to_tree(std::shared_ptr<Node> root)
 {
