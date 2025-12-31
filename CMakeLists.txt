@@ -25,6 +25,8 @@ target_include_directories(parsing_lib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+target_link_libraries(parsing_lib PUBLIC Qt6::Widgets)
+
 add_library(rendering_lib
     src/rendering/browser_widget.cpp
 )

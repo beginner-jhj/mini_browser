@@ -3,9 +3,9 @@
 #include <iostream>
 #include <cctype>
 
-std::map<std::string, std::string> parse_inline_style(std::string_view style_string)
+std::unordered_map<std::string, std::string> parse_inline_style(std::string_view style_string)
 {
-    std::map<std::string, std::string> result;
+    std::unordered_map<std::string, std::string> result;
     if (style_string.empty())
         return result;
     std::string name, value;
@@ -59,7 +59,7 @@ std::map<std::string, std::string> parse_inline_style(std::string_view style_str
                 {
                     is_in_quote = !is_in_quote;
                 }
-                value += paren_depth > 0 || is_in_quote ?  current:std::tolower(static_cast<unsigned char>(current));
+                value += paren_depth > 0 || is_in_quote ? current : std::tolower(static_cast<unsigned char>(current));
             }
         }
 

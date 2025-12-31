@@ -1,10 +1,12 @@
 #pragma once
+#include <QScrollArea>
 #include <QWidget>
 #include <QPainter>
 #include <QPaintEvent>
 #include <memory>
 #include <utility>
 #include "html/node.h"
+#include "css/style_applier.h"
 
 class BrowserWidget : public QWidget
 {
@@ -16,6 +18,7 @@ private:
     static constexpr int FONT_SIZE_P = 16;
     static constexpr int LIST_INDENT = 30;
     std::shared_ptr<Node> m_root;
+    StyleApplier m_style_applier;
 
     // Returns next Y position after drawing
     std::pair<int, int> draw_node(QPainter &painter, std::shared_ptr<Node> node, int x, int y);

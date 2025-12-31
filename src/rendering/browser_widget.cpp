@@ -33,6 +33,7 @@ std::pair<int, int> BrowserWidget::draw_node(QPainter &painter, std::shared_ptr<
             QString text_content = QString::fromStdString(child->get_text_content());
 
             QFontMetrics fm(painter.font());
+            int line_height = fm.height();
 
             QStringList words = text_content.split(" ");
             for (const QString &word : words)
@@ -42,11 +43,11 @@ std::pair<int, int> BrowserWidget::draw_node(QPainter &painter, std::shared_ptr<
                 int word_width = fm.horizontalAdvance(word_with_space);
                 if (current_x + word_width > display_width - MARGIN_LEFT)
                 {
-                    current_y += LINE_HEIGHT;
+                    current_y += line_height;
                     current_x = x;
                 }
 
-                painter.drawText(current_x, current_y + LINE_HEIGHT, word_with_space);
+                painter.drawText(current_x, current_y + line_height, word_with_space);
                 current_x += word_width;
             }
         }
@@ -59,13 +60,16 @@ std::pair<int, int> BrowserWidget::draw_node(QPainter &painter, std::shared_ptr<
             {
                 if (current_x > x)
                 {
-                    current_y += LINE_HEIGHT;
+                    QFontMetrics fm(painter.font());
+
+                    current_y += fm.height();
                     current_x = x;
                 }
 
                 QFont font = painter.font();
 
                 apply_element_style(painter, child);
+                QFontMetrics fm(painter.font());
 
                 int child_x = x;
 
@@ -76,13 +80,13 @@ std::pair<int, int> BrowserWidget::draw_node(QPainter &painter, std::shared_ptr<
 
                 else if (tag == "li")
                 {
-                    painter.drawText(child_x, current_y + LINE_HEIGHT, "•");
+                    painter.drawText(child_x, current_y + fm.height(), "•");
                     child_x += 15;
                 }
 
                 auto [new_x, new_y] = draw_node(painter, child, child_x, current_y);
 
-                current_y = new_y + LINE_HEIGHT / 2;
+                current_y = new_y + fm.height() / 2;
                 current_x = x;
 
                 reset_style(painter);
@@ -143,6 +147,8 @@ void BrowserWidget::apply_element_style(QPainter &painter, std::shared_ptr<Node>
         painter.setPen(QColor("#0066cc"));
         font.setUnderline(true);
     }
+
+    m_style_applier.apply(painter, font, node->get_all_styles());
     painter.setFont(font);
 }
 
