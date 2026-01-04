@@ -22,8 +22,7 @@ struct ComputedStyle
     QColor color = QColor("#000000");          // default: black
     int font_size = 16;                        // default: 16px
     QFont::Weight font_weight = QFont::Normal; // default: normal
-    bool italic = false;
-    bool underline = false;
+    std::string font_style = "normal";
     QString font_family = "Arial";
 
     QColor background_color = QColor("transparent");
@@ -57,9 +56,11 @@ struct ComputedStyle
         QFont font;
         font.setPixelSize(font_size);
         font.setWeight(font_weight);
-        font.setItalic(italic);
-        font.setUnderline(underline);
         font.setFamily(font_family);
+        if (font_style == "italic")
+        {
+            font.setItalic(true);
+        }
         return font;
     }
     QFontMetrics font_metrics() const
@@ -77,4 +78,13 @@ struct ComputedStyle
     static void init_setters();
 
     ComputedStyle() { init_setters(); };
+
+    std::string inherit_color() const;
+    std::string inherit_font_size() const;
+    std::string inherit_font_weight() const;
+    std::string inherit_font_style() const;
+    std::string inherit_font_family() const;
+    std::string inherit_line_height() const;
+    std::string inherit_text_align() const;
+    std::string inherit_visibility() const;
 };

@@ -1,8 +1,15 @@
 #include "css/computed_style.h"
 #include "html/node.h"
 
+std::unordered_map<std::string, ComputedStyle::Setter> ComputedStyle::setters;
+
+static bool initialized = false;
+
 void ComputedStyle::init_setters()
 {
+    if (initialized)
+        return;
+    initialized = true;
     setters["color"] = [](ComputedStyle &s, const std::string &value)
     {
         s.color = parse_color(value);
@@ -17,6 +24,17 @@ void ComputedStyle::init_setters()
     {
         try
         {
+            if (value == "normal")
+            {
+                s.font_weight = QFont::Normal;
+                return;
+            }
+
+            if (value == "bold")
+            {
+                s.font_weight = QFont::Bold;
+                return;
+            }
             int weight = std::stoi(value);
             int adjusted_weight;
             if (weight >= 100 && weight < 1000)
@@ -79,28 +97,9 @@ void ComputedStyle::init_setters()
         }
     };
 
-    setters["italic"] = [](ComputedStyle &s, const std::string &value)
+    setters["font-style"] = [](ComputedStyle &s, const std::string &value)
     {
-        if (value == "true")
-        {
-            s.italic = true;
-        }
-        else
-        {
-            s.italic = false;
-        }
-    };
-
-    setters["underline"] = [](ComputedStyle &s, const std::string &value)
-    {
-        if (value == "true")
-        {
-            s.underline = true;
-        }
-        else
-        {
-            s.italic = false;
-        }
+        s.font_style = value;
     };
 
     setters["font-family"] = [](ComputedStyle &s, const std::string &value)
@@ -408,5 +407,81 @@ float ComputedStyle::parse_string_to_float(const std::string &value, const float
     catch (...)
     {
         return default_value;
+    }
+}
+
+std::string ComputedStyle::inherit_color() const
+{
+    QString color_hex_name = color.name();
+    return color_hex_name.toStdString();
+}
+
+std::string ComputedStyle::inherit_font_size() const
+{
+    return std::to_string(font_size);
+}
+
+std::string ComputedStyle::inherit_font_weight() const
+{
+    int weight = font_weight;
+    if (weight >= 100)
+    {
+        return std::to_string(weight);
+    }
+
+    else
+    {
+        if (weight < 10)
+        {
+            return std::to_string(weight * 100);
+        }
+
+        return std::to_string(weight * 10);
+    }
+}
+
+std::string ComputedStyle::inherit_font_style() const
+{
+    return font_style;
+}
+
+std::string ComputedStyle::inherit_font_family() const
+{
+    return font_family.toStdString();
+}
+
+std::string ComputedStyle::inherit_line_height() const
+{
+    return std::to_string(line_height);
+}
+
+std::string ComputedStyle::inherit_text_align() const
+{
+    if (text_align == TextAlign::Center)
+    {
+        return "center";
+    }
+
+    else if (text_align == TextAlign::Justify)
+    {
+        return "justify";
+    }
+
+    else if (text_align == TextAlign::Right)
+    {
+        return "right";
+    }
+
+    else
+    {
+        return "left";
+    }
+}
+
+std::string ComputedStyle::inherit_visibility() const {
+    if(!visibility){
+        return "hidden";
+    }else{
+        return "visible";
     }
 }

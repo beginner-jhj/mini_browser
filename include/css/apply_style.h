@@ -3,4 +3,4 @@
 #include "css/css_rule.h"
 #include "css/cssom.h"
 
-void apply_style(std::shared_ptr<Node> node,CSSOM& cssom);
+void apply_style(std::shared_ptr<Node> node,CSSOM& cssom, bool is_root = true);
