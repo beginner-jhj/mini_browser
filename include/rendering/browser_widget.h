@@ -13,7 +13,7 @@ private:
     std::shared_ptr<Node> m_root;
     CSSOM m_cssom;
 
-    void paint_layout(QPainter& painter, const LayoutBox& box, float offset_x, float offset_y);
+    void paint_layout(QPainter& painter, const LayoutBox& box, float offset_x, float offset_y, const LayoutBox *parent_box=nullptr);
 
 protected:
     void paintEvent(QPaintEvent *event) override;

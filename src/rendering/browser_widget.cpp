@@ -46,10 +46,34 @@ void BrowserWidget::set_document(std::shared_ptr<Node> root)
     update();
 }
 
-void BrowserWidget::paint_layout(QPainter &painter, const LayoutBox &box, float offset_x, float offset_y)
+void BrowserWidget::paint_layout(QPainter &painter, const LayoutBox &box, float offset_x, float offset_y, const LayoutBox *parent_box)
 {
     float abs_x = offset_x + box.x;
     float abs_y = offset_y + box.y;
+
+    if (box.node->get_type() == NODE_TYPE::ELEMENT)
+    {
+        if (box.style.background_color != QColor("transparent"))
+        {
+            painter.fillRect(
+                abs_x, abs_y,
+                box.width, box.height,
+                box.style.background_color);
+        }
+
+        if (box.style.border_width > 0)
+        {
+            QPen pen;
+            pen.setColor(box.style.border_color);
+            pen.setStyle(box.style.border_style);
+            pen.setWidthF(box.style.border_width);
+
+            painter.setPen(pen);
+            painter.setBrush(Qt::NoBrush);
+
+            painter.drawRect(abs_x, abs_y, box.width, box.height);
+        }
+    }
 
     if (box.node->get_type() == NODE_TYPE::TEXT)
     {
@@ -61,50 +85,51 @@ void BrowserWidget::paint_layout(QPainter &painter, const LayoutBox &box, float 
         std::string text = box.node->get_text_content();
         float baseline_y = abs_y + metrics.ascent();
 
-        qDebug() << "Drawing TEXT" << QString::fromStdString(text.substr(0, 10))
-                 << "at" << abs_x << abs_y + metrics.ascent()
-                 << "color" << box.style.color.name();
+        float text_x = abs_x;
 
-        painter.drawText(abs_x, baseline_y, QString::fromStdString(text));
-    }
-
-    if (box.node->get_type() == NODE_TYPE::ELEMENT)
-    {
-        if (box.style.background_color != QColor("transparent"))
+        if (parent_box)
         {
-            painter.fillRect(
-                abs_x, abs_y,
-                box.width, box.height,
-                box.style.background_color);
+            float text_width = metrics.horizontalAdvance(QString::fromStdString(text));
+
+            if (parent_box->style.text_align == TextAlign::Center)
+            {
+                text_x = offset_x + (parent_box->width - text_width) / 2;
+            }
+
+            else if (parent_box->style.text_align == TextAlign::Right)
+            {
+                text_x = offset_x + parent_box->width - text_width;
+            }
         }
+
+        painter.drawText(text_x, baseline_y, QString::fromStdString(text));
     }
 
     for (const auto &child : box.children)
     {
-        paint_layout(painter, child, abs_x, abs_y);
+        paint_layout(painter, child, abs_x, abs_y, &box);
     }
 }
 
+// void print_layout_debug(const LayoutBox& box, int depth) {
+//     std::string indent(depth * 2, ' ');
+//     std::string tag = box.node->get_tag_name();
 
-void print_layout_debug(const LayoutBox& box, int depth) {
-    std::string indent(depth * 2, ' ');
-    std::string tag = box.node->get_tag_name();
-    
-    if (box.node->get_type() == NODE_TYPE::TEXT) {
-        std::string text = box.node->get_text_content();
-        if (text.size() > 15) text = text.substr(0, 15) + "...";
-        tag = "TEXT: [" + text + "]";
-    }
-    
-    std::cout << indent << tag 
-              << " at (" << box.x << ", " << box.y << ")"
-              << " size " << box.width << "x" << box.height
-              << std::endl;
-    
-    for (const auto& child : box.children) {
-        print_layout_debug(child, depth + 1);
-    }
-}
+//     if (box.node->get_type() == NODE_TYPE::TEXT) {
+//         std::string text = box.node->get_text_content();
+//         if (text.size() > 15) text = text.substr(0, 15) + "...";
+//         tag = "TEXT: [" + text + "]";
+//     }
+
+//     std::cout << indent << tag
+//               << " at (" << box.x << ", " << box.y << ")"
+//               << " size " << box.width << "x" << box.height
+//               << std::endl;
+
+//     for (const auto& child : box.children) {
+//         print_layout_debug(child, depth + 1);
+//     }
+// }
 
 void BrowserWidget::paintEvent(QPaintEvent *event)
 {
@@ -119,8 +144,6 @@ void BrowserWidget::paintEvent(QPaintEvent *event)
     int viewport_width = this->width();
     LineState line(viewport_width);
     LayoutBox layout = create_layout_tree(m_root, viewport_width, line);
-
-    print_layout_debug(layout, 0);
 
     paint_layout(painter, layout, 0, 0);
 }

@@ -11,6 +11,7 @@ struct LineState {
     float current_y = 0;
     float line_height = 0;
     float max_width = 0;
+    float padding_left = 0;
     
     LineState(float width = 0) : max_width(width) {}
 };

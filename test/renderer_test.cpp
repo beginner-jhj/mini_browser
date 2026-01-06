@@ -10,26 +10,40 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    std::string html = R"(
+    // renderer_test.cpp
+   std::string html = R"(
 <html>
 <head>
     <style>
-        h1 { color: blue; font-size: 32px; }
-        p { color: black; font-size: 16px; }
-        .red { color: red; }
+        .box1 { 
+            padding-top: 20;
+            padding-bottom: 20;
+            padding-left: 30;
+            padding-right: 30;
+            border-width: 2;
+            border-color: red;
+            background-color: #ffeeee;
+        }
+        .box2 { 
+            margin-top: 10;
+            padding-top: 10;
+            padding-left: 50;
+            border-width: 2;
+            border-color: blue;
+            background-color: #eeeeff;
+        }
     </style>
 </head>
 <body>
-    <h1>Hello World!</h1>
-    <p>This is a <span class="red">red</span> paragraph.</p>
-    <p>Second paragraph.</p>
+    <p class="box1">Paragraph with padding - text should be away from border</p>
+    <p class="box2">Paragraph with both margin and padding</p>
+    <p>Normal paragraph</p>
 </body>
 </html>
 )";
 
     auto tokens = tokenize(html);
     auto tree = parse(tokens);
-
 
     BrowserWidget *widget = new BrowserWidget();
     widget->set_document(tree);

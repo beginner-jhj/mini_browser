@@ -34,32 +34,31 @@ LayoutBox create_layout_tree(
         }
         else
         {
-            box.width = parent_width;
+            box.width = parent_width - box.style.margin_left - box.style.margin_right;
         }
 
-        qDebug() << "BLOCK" << QString::fromStdString(root->get_tag_name())
-                 << "reset line to (" << line.current_x << "," << line.current_y << ")";
-
-        line.current_x = 0;
-        line.current_y = 0;
+        line.current_x = box.style.padding_left;
+        line.current_y = box.style.padding_top;
         line.line_height = 0;
-        line.max_width = box.width;
+        line.max_width = box.width - box.style.padding_right - box.style.padding_left;
+        line.padding_left = box.style.padding_left;
 
-        float content_y = 0;
+        float content_y = box.style.padding_top;
         for (auto child : root->get_children())
         {
-            qDebug() << "  Processing child" << QString::fromStdString(child->get_tag_name());
-            LayoutBox child_box = create_layout_tree(child, box.width, line);
-            qDebug() << "    Result: x=" << child_box.x << "y=" << child_box.y
-                     << "line.current_x=" << line.current_x;
+
+            float child_parent_width = box.width -
+                                       box.style.padding_left -
+                                       box.style.padding_right;
+            LayoutBox child_box = create_layout_tree(child, child_parent_width, line);
 
             if (child_box.style.display == DISPLAY_TYPE::BLOCK)
             {
-                child_box.x = 0;
-                child_box.y = content_y;
-                content_y += child_box.height;
+                child_box.x = child_box.style.margin_left + box.style.padding_left;
+                child_box.y = content_y + child_box.style.margin_top;
+                content_y += child_box.height + child_box.style.margin_top + child_box.style.margin_bottom;
 
-                line.current_x = 0;
+                line.current_x = box.style.padding_left;
                 line.current_y = content_y;
                 line.line_height = 0;
             }
@@ -81,7 +80,7 @@ LayoutBox create_layout_tree(
         }
         else
         {
-            box.height = content_y;
+            box.height = content_y + box.style.padding_bottom;
         }
 
         return box;
@@ -99,7 +98,7 @@ LayoutBox create_layout_tree(
 
         if (line.current_x + text_width > line.max_width && line.current_x > 0)
         {
-            line.current_x = 0;
+            line.current_x = line.padding_left;
             line.current_y += line.line_height;
             line.line_height = 0;
         }

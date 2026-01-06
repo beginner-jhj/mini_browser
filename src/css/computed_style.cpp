@@ -147,7 +147,7 @@ void ComputedStyle::init_setters()
         s.padding_top = parse_string_to_float(value, 0);
     };
 
-    setters["padding-botom"] = [](ComputedStyle &s, const std::string &value)
+    setters["padding-bottom"] = [](ComputedStyle &s, const std::string &value)
     {
         s.padding_bottom = parse_string_to_float(value, 0);
     };
@@ -157,7 +157,7 @@ void ComputedStyle::init_setters()
         s.padding_left = parse_string_to_float(value, 0);
     };
 
-    setters["padding_right"] = [](ComputedStyle &s, const std::string &value)
+    setters["padding-right"] = [](ComputedStyle &s, const std::string &value)
     {
         s.padding_right = parse_string_to_float(value, 0);
     };
