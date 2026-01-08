@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 </head>
 <body>
     <p class="normal" style="width:400px;">
-        This is normal line height text that wraps
+        This is normal line height text that wraps. Wow please I hope this work well. I can do anything. I will success!!!! Come on!! No pain no gain!!
     </p>
     <p class="loose">
         This is loose line height text that wraps
@@ -40,7 +40,6 @@ int main(int argc, char *argv[])
 
     BrowserWidget *widget = new BrowserWidget();
     widget->set_document(tree);
-
     QScrollArea *scroll = new QScrollArea();
     scroll->setWidget(widget);
     scroll->setWidgetResizable(true);

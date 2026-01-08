@@ -3,7 +3,7 @@
 #include "css/apply_style.h"
 #include <iostream>
 #include <QDebug>
-BrowserWidget::BrowserWidget(QWidget *parent) : QWidget(parent), m_root(nullptr), m_layout_width(0), m_layout_height(0) {};
+BrowserWidget::BrowserWidget(QWidget *parent) : QWidget(parent), m_root(nullptr), m_current_screen_width(0){};
 
 void BrowserWidget::set_document(std::shared_ptr<Node> root)
 {
@@ -156,9 +156,13 @@ void BrowserWidget::paintEvent(QPaintEvent *event)
 
     int viewport_width = this->width();
     LineState line(viewport_width);
-    LayoutBox layout = create_layout_tree(m_root, viewport_width, line);
-    m_layout_width = layout.width;
-    m_layout_height = layout.height;
+    LayoutBox layout = create_layout_tree(m_root, viewport_width, line, m_current_screen_width);
 
     paint_layout(painter, layout, 0, 0);
+}
+
+void BrowserWidget::resizeEvent(QResizeEvent *event){
+    m_current_screen_width = this->width();
+    // qDebug() << "current screen width: " << width;
+    QWidget::resizeEvent(event);
 }

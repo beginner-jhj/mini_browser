@@ -32,5 +32,6 @@ struct LayoutBox {
 LayoutBox create_layout_tree(
     std::shared_ptr<Node> root,
     float parent_width,
-    LineState& line
+    LineState& line,
+    int current_screen_width
 );

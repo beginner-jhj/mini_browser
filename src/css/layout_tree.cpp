@@ -5,7 +5,7 @@
 LayoutBox create_layout_tree(
     std::shared_ptr<Node> root,
     float parent_width,
-    LineState &line)
+    LineState &line, int current_screen_width)
 {
     LayoutBox box;
     box.node = root;
@@ -31,6 +31,7 @@ LayoutBox create_layout_tree(
     {
         if (box.style.width > 0)
         {
+            // qDebug() << "Assigned width: " << box.style.width;
             box.width = box.style.width;
         }
         else
@@ -51,7 +52,7 @@ LayoutBox create_layout_tree(
             float child_parent_width = box.width -
                                        box.style.padding_left -
                                        box.style.padding_right;
-            LayoutBox child_box = create_layout_tree(child, child_parent_width, line);
+            LayoutBox child_box = create_layout_tree(child, child_parent_width, line, current_screen_width);
 
             if (child_box.style.display == DISPLAY_TYPE::BLOCK)
             {
@@ -100,7 +101,12 @@ LayoutBox create_layout_tree(
             int word_width = metrics.horizontalAdvance(QString::fromStdString(word));
             int word_height = metrics.height();
 
-            bool will_wrap = line.current_x + word_width > line.max_width && line.current_x > 0;
+            // qDebug() << "word_text: " << word;
+            // qDebug() << "line.current_x + word_width = " << line.current_x << " + " << word_width << " = " << line.current_x +word_width;
+            // qDebug() << "max_width: " << line.max_width;
+            bool will_wrap = (line.current_x + word_width > line.max_width || line.current_x + word_width > current_screen_width) && line.current_x > 0;
+
+            // qDebug() << "will_wrap: " << will_wrap;
 
             if (will_wrap)
             {
@@ -144,7 +150,7 @@ LayoutBox create_layout_tree(
 
         for (auto child : root->get_children())
         {
-            LayoutBox child_box = create_layout_tree(child, parent_width, line);
+            LayoutBox child_box = create_layout_tree(child, parent_width, line, current_screen_width);
             child_box.x -= start_x;
             child_box.y -= start_y;
             box.children.push_back(child_box);
