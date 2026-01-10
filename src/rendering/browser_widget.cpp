@@ -53,6 +53,9 @@ void BrowserWidget::paint_layout(QPainter &painter, const LayoutBox &box, float 
     float abs_x = offset_x + box.x;
     float abs_y = offset_y + box.y;
 
+    float previous_opacity = painter.opacity();
+    painter.setOpacity(previous_opacity * box.style.opacity);
+
     if (box.node->get_type() == NODE_TYPE::ELEMENT)
     {
         if (box.style.background_color != QColor("transparent"))
@@ -105,7 +108,6 @@ void BrowserWidget::paint_layout(QPainter &painter, const LayoutBox &box, float 
             }
         }
 
-
         for (const auto &word_box : box.children)
         {
             float word_abs_x = offset_x + word_box.x + offset_adjust;
@@ -115,22 +117,7 @@ void BrowserWidget::paint_layout(QPainter &painter, const LayoutBox &box, float 
             painter.drawText(word_abs_x, baseline_y,
                              QString::fromStdString(word_box.text));
 
-            switch (box.style.text_decoration)
-            {
-            case TextDecoration::UnderLine:
-                qDebug() << "underline";
-                break;
-            case TextDecoration::LineThrough:
-                qDebug() << "line-through";
-                break;
-            case TextDecoration::OverLine:
-                qDebug() << "overline";
-                break;
-            default:
-                qDebug() << "none";
-                break;
-            }
-            if (box.style.text_decoration != TextDecoration::None)
+            if (word_box.style.text_decoration != TextDecoration::None)
             {
                 QPen decoration_pen(box.style.color);
                 decoration_pen.setWidth(1);

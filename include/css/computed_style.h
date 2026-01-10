@@ -42,15 +42,18 @@ struct ComputedStyle
     float margin_right = 0.0;
     float margin_bottom = 0.0;
     float margin_left = 0.0;
+    std::string margin{};
 
     float padding_top = 0.0;
     float padding_right = 0.0;
     float padding_bottom = 0.0;
     float padding_left = 0.0;
+    std::string padding{};
 
     float border_width = 0.0;
     QColor border_color = QColor("#000000");
     Qt::PenStyle border_style = Qt::SolidLine;
+    std::string border{};
 
     DISPLAY_TYPE display = DISPLAY_TYPE::INLINE;
     BoxSizing box_sizing = BoxSizing::ContentBox;
@@ -58,6 +61,7 @@ struct ComputedStyle
     TextDecoration text_decoration = TextDecoration::None;
 
     float line_height = font_size * 1.5;
+    float opacity = 1;
 
     bool visibility = true;
 
@@ -87,8 +91,6 @@ struct ComputedStyle
 
     static void init_setters();
 
-    ComputedStyle() { init_setters(); };
-
     std::string inherit_color() const;
     std::string inherit_font_size() const;
     std::string inherit_font_weight() const;
@@ -97,4 +99,5 @@ struct ComputedStyle
     std::string inherit_line_height() const;
     std::string inherit_text_align() const;
     std::string inherit_visibility() const;
+    std::string inherit_text_decoration() const;
 };

@@ -1,4 +1,5 @@
 #include "html/node.h"
+#include <QDebug>
 
 Node::Node(NODE_TYPE t, const std::string &content) : m_type(t)
 {

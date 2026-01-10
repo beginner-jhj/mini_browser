@@ -16,16 +16,35 @@ int main(int argc, char *argv[])
 <html>
 <head>
     <style>
-        .underline { text-decoration: underline; }
-        .strike { text-decoration: line-through; }
-        .overline { text-decoration: overline; }
+        .box1 { 
+            background-color: lightblue; 
+            padding: 20px;
+        }
+        
+        .box2 { 
+            background-color: lightgreen; 
+            padding: 10px 30px;
+            margin: 20px;
+        }
+        
+        .box3 { 
+            background-color: lightcoral; 
+            padding: 5px 15px 25px;
+            margin: 10px 20px;
+        }
+        
+        .box4 { 
+            background-color: lightyellow; 
+            padding: 5px 10px 15px 20px;
+            margin: 5px 10px 15px 20px;
+        }
     </style>
 </head>
 <body>
-    <p class="underline">This text has underline</p>
-    <p class="strike">This text is striked through</p>
-    <p class="overline">This text has overline</p>
-    <p>Normal text with <span class="underline">underlined part</span> in the middle</p>
+    <div class="box1">Box 1: padding: 20px</div>
+    <div class="box2">Box 2: padding: 10px 30px, margin: 20px</div>
+    <div class="box3">Box 3: padding: 5px 15px 25px, margin: 10px 20px</div>
+    <div class="box4">Box 4: padding: 5px 10px 15px 20px</div>
 </body>
 </html>
 )";

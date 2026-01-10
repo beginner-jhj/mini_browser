@@ -28,6 +28,7 @@ void apply_style(std::shared_ptr<Node> node, CSSOM &cssom) {
             current_node->set_style("line-height", parent_style.inherit_line_height());
             current_node->set_style("text-align", parent_style.inherit_text_align());
             current_node->set_style("visibility", parent_style.inherit_visibility());
+            current_node->set_style("text-decoration", parent_style.inherit_text_decoration());
         }
         
         auto matched_rules = cssom.matching_rules(current_node);

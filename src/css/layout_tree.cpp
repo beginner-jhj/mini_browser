@@ -98,6 +98,7 @@ LayoutBox create_layout_tree(
 
         for (auto &word : words)
         {
+            
             int word_width = metrics.horizontalAdvance(QString::fromStdString(word));
             int word_height = metrics.height();
 
@@ -123,6 +124,7 @@ LayoutBox create_layout_tree(
             word_box.y = line.current_y;
             word_box.width = word_width;
             word_box.height = word_height;
+
 
             box.children.push_back(word_box);
 
