@@ -47,46 +47,65 @@ void BrowserWidget::set_document(std::shared_ptr<Node> root)
 
     update();
 }
-
 void BrowserWidget::paint_fixed(QPainter &painter, const LayoutBox &box)
 {
-    float abs_x = 0;
-    float abs_y = 0;
+    // Get scroll offset from parent QScrollArea
+    QScrollArea *scroll_area = qobject_cast<QScrollArea*>(parentWidget()->parentWidget());
+    int scroll_x = 0;
+    int scroll_y = 0;
+    
+    if (scroll_area)
+    {
+        scroll_x = scroll_area->horizontalScrollBar()->value();
+        scroll_y = scroll_area->verticalScrollBar()->value();
+    }
+    
+    float draw_x = 0;
+    float draw_y = 0;
 
+    // Horizontal positioning
     if (box.style.is_left_set)
     {
-        abs_x = box.style.left;
+        draw_x = scroll_x + box.style.left; 
     }
     else if (box.style.is_right_set)
     {
-        abs_x = m_viewport_width - box.width - box.style.right;
+        draw_x = scroll_x + m_viewport_width - box.width - box.style.right;
+    }
+    else 
+    {
+        // default to left: 0 if not set (or current flow position in real browser, but simplified here)
+        draw_x = scroll_x; 
     }
 
+    // Vertical positioning
     if (box.style.is_top_set)
     {
-        abs_y = box.style.top;
+        draw_y = scroll_y + box.style.top;
     }
     else if (box.style.is_bottom_set)
     {
-        abs_y = m_viewport_height - box.height - box.style.bottom;
+        draw_y = scroll_y + m_viewport_height - box.height - box.style.bottom;
     }
-
-    // if (box.style.width <= 0)
-    // {
-
-    // }
+    else
+    {
+        draw_y = scroll_y;
+    }
 
     float previous_opacity = painter.opacity();
     painter.setOpacity(previous_opacity * box.style.opacity);
 
+    
+    // Draw background
     if (box.style.background_color != QColor("transparent"))
     {
         painter.fillRect(
-            abs_x, abs_y,
+            draw_x, draw_y,
             box.width, box.height,
             box.style.background_color);
     }
 
+    // Draw border
     if (box.style.border_width > 0)
     {
         QPen pen;
@@ -97,17 +116,31 @@ void BrowserWidget::paint_fixed(QPainter &painter, const LayoutBox &box)
         painter.setPen(pen);
         painter.setBrush(Qt::NoBrush);
 
-        painter.drawRect(abs_x, abs_y, box.width, box.height);
+        painter.drawRect(draw_x, draw_y, box.width, box.height);
     }
 
     if (box.node->get_type() == NODE_TYPE::TEXT)
     {
+        QFont ft = box.style.to_font();
+        painter.setFont(ft);
+        painter.setPen(box.style.color);
 
+        QFontMetrics metrics(ft);
+        
+        for (const auto &word_box : box.children)
+        {
+            float word_abs_x = draw_x + word_box.x;
+            float word_abs_y = draw_y + word_box.y;
+            float baseline_y = word_abs_y + metrics.ascent();
+
+            painter.drawText(word_abs_x, baseline_y,
+                           QString::fromStdString(word_box.text));
+        }
     }
 
     for (const auto &child : box.children)
     {
-        paint_layout(painter, child, abs_x, abs_y, &box);
+        paint_layout(painter, child, draw_x, draw_y, &box);
     }
 
     painter.setOpacity(previous_opacity);

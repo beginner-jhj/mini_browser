@@ -2,6 +2,8 @@
 #include <QWidget>
 #include <QPainter>
 #include <QPaintEvent>
+#include <QScrollArea> 
+#include <QScrollBar>
 #include <memory>
 #include "html/node.h"
 #include "css/cssom.h"

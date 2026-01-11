@@ -44,7 +44,6 @@ int main(int argc, char *argv[])
         body {
             margin: 0;
             padding: 0;
-            height: 2000px;  /* 스크롤 가능하게 */
         }
         
         /* Fixed Header */
