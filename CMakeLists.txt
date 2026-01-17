@@ -10,6 +10,11 @@ set(CMAKE_AUTOMOC ON)
 # GUI Library
 add_library(gui_lib
     src/gui/main_window.cpp
+    src/gui/header.cpp
+    src/gui/renderer.cpp
+    include/gui/main_window.h 
+    include/gui/header.h
+    include/gui/renderer.h
 )
 
 target_include_directories(gui_lib PUBLIC

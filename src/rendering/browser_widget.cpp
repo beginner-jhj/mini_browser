@@ -119,24 +119,24 @@ void BrowserWidget::paint_fixed(QPainter &painter, const LayoutBox &box)
         painter.drawRect(draw_x, draw_y, box.width, box.height);
     }
 
-    if (box.node->get_type() == NODE_TYPE::TEXT)
-    {
-        QFont ft = box.style.to_font();
-        painter.setFont(ft);
-        painter.setPen(box.style.color);
+    // if (box.node->get_type() == NODE_TYPE::TEXT)
+    // {
+    //     QFont ft = box.style.to_font();
+    //     painter.setFont(ft);
+    //     painter.setPen(box.style.color);
 
-        QFontMetrics metrics(ft);
+    //     QFontMetrics metrics(ft);
         
-        for (const auto &word_box : box.children)
-        {
-            float word_abs_x = draw_x + word_box.x;
-            float word_abs_y = draw_y + word_box.y;
-            float baseline_y = word_abs_y + metrics.ascent();
+    //     for (const auto &word_box : box.children)
+    //     {
+    //         float word_abs_x = draw_x + word_box.x;
+    //         float word_abs_y = draw_y + word_box.y;
+    //         float baseline_y = word_abs_y + metrics.ascent();
 
-            painter.drawText(word_abs_x, baseline_y,
-                           QString::fromStdString(word_box.text));
-        }
-    }
+    //         painter.drawText(word_abs_x, baseline_y,
+    //                        QString::fromStdString(word_box.text));
+    //     }
+    // }
 
     for (const auto &child : box.children)
     {
