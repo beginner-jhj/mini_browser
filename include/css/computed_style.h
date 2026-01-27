@@ -113,6 +113,19 @@ struct COMPUTED_STYLE
     static QColor parse_color(const std::string &color_value);
     static int parse_font_size(const std::string &value);
     static float parse_string_to_float(const std::string &value, const float default_value = 0);
+    
+    // Enum parsers
+    static DISPLAY_TYPE parse_display_type(const std::string &value);
+    static TEXT_ALIGN parse_text_align(const std::string &value);
+    static BOX_SIZING parse_box_sizing(const std::string &value);
+    static TEXT_DECORATION parse_text_decoration(const std::string &value);
+    static POSITION_TYPE parse_position_type(const std::string &value);
+    
+    // Spacing shorthand parser (margin/padding: 1-4 values)
+    struct SPACING_VALUES {
+        float top, right, bottom, left;
+    };
+    static SPACING_VALUES parse_spacing_shorthand(const std::string &value);
 
     static void init_setters();
 

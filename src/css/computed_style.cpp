@@ -7,16 +7,134 @@ std::unordered_map<std::string, COMPUTED_STYLE::Setter> COMPUTED_STYLE::setters;
 
 static bool initialized = false;
 
+// ============================================================================
+// Enum Parser Helper Functions
+// ============================================================================
+
 /**
- * \brief Initializes the CSS property setters for COMPUTED_STYLE.
- *
- * Creates and populates the static setters map with lambda functions that handle
- * CSS property assignments. Supports properties including font, color, spacing,
- * borders, display, positioning, and text styling. Each setter parses the CSS value
- * string and applies it to the COMPUTED_STYLE member variable.
- *
- * Only initializes once; subsequent calls are no-ops due to initialization guard.
+ * \brief Parses a string value to DISPLAY_TYPE enum.
+ * 
+ * \param value CSS display value (e.g., "block", "inline", "none")
+ * \return Corresponding DISPLAY_TYPE enum value
  */
+DISPLAY_TYPE COMPUTED_STYLE::parse_display_type(const std::string &value)
+{
+    if (value == "inline") return DISPLAY_TYPE::INLINE;
+    if (value == "block") return DISPLAY_TYPE::BLOCK;
+    return DISPLAY_TYPE::NONE;
+}
+
+/**
+ * \brief Parses a string value to TEXT_ALIGN enum.
+ * 
+ * \param value CSS text-align value (e.g., "left", "center", "right", "justify")
+ * \return Corresponding TEXT_ALIGN enum value
+ */
+TEXT_ALIGN COMPUTED_STYLE::parse_text_align(const std::string &value)
+{
+    if (value == "center") return TEXT_ALIGN::Center;
+    if (value == "right") return TEXT_ALIGN::Right;
+    if (value == "justify") return TEXT_ALIGN::Justify;
+    return TEXT_ALIGN::Left;
+}
+
+/**
+ * \brief Parses a string value to BOX_SIZING enum.
+ * 
+ * \param value CSS box-sizing value (e.g., "border-box", "content-box")
+ * \return Corresponding BOX_SIZING enum value
+ */
+BOX_SIZING COMPUTED_STYLE::parse_box_sizing(const std::string &value)
+{
+    if (value == "border-box") return BOX_SIZING::BorderBox;
+    return BOX_SIZING::ContentBox;
+}
+
+/**
+ * \brief Parses a string value to TEXT_DECORATION enum.
+ * 
+ * \param value CSS text-decoration value (e.g., "underline", "line-through", "overline")
+ * \return Corresponding TEXT_DECORATION enum value
+ */
+TEXT_DECORATION COMPUTED_STYLE::parse_text_decoration(const std::string &value)
+{
+    if (value == "underline") return TEXT_DECORATION::UnderLine;
+    if (value == "line-through") return TEXT_DECORATION::LineThrough;
+    if (value == "overline") return TEXT_DECORATION::OverLine;
+    return TEXT_DECORATION::None;
+}
+
+/**
+ * \brief Parses a string value to POSITION_TYPE enum.
+ * 
+ * \param value CSS position value (e.g., "static", "relative", "absolute", "fixed")
+ * \return Corresponding POSITION_TYPE enum value
+ */
+POSITION_TYPE COMPUTED_STYLE::parse_position_type(const std::string &value)
+{
+    if (value == "relative") return POSITION_TYPE::Relative;
+    if (value == "absolute") return POSITION_TYPE::Absolute;
+    if (value == "fixed") return POSITION_TYPE::Fixed;
+    return POSITION_TYPE::Static;
+}
+
+/**
+ * \brief Parses CSS spacing shorthand values (margin/padding with 1-4 values).
+ * 
+ * Implements CSS shorthand syntax:
+ * - 1 value: applied to all sides
+ * - 2 values: [vertical, horizontal]
+ * - 3 values: [top, horizontal, bottom]
+ * - 4+ values: [top, right, bottom, left]
+ * 
+ * \param value CSS spacing shorthand string
+ * \return SPACING_VALUES struct with top, right, bottom, left values
+ */
+COMPUTED_STYLE::SPACING_VALUES COMPUTED_STYLE::parse_spacing_shorthand(const std::string &value)
+{
+    std::vector<std::string> parts;
+    std::stringstream ss(value);
+    std::string part;
+
+    while (ss >> part) {
+        parts.push_back(part);
+    }
+
+    float val_top = 0, val_right = 0, val_bottom = 0, val_left = 0;
+
+    if (parts.size() == 1) {
+        // All sides
+        float val = parse_string_to_float(parts[0], 0);
+        val_top = val_right = val_bottom = val_left = val;
+    }
+    else if (parts.size() == 2) {
+        // Vertical, Horizontal
+        float vertical = parse_string_to_float(parts[0], 0);
+        float horizontal = parse_string_to_float(parts[1], 0);
+        val_top = val_bottom = vertical;
+        val_left = val_right = horizontal;
+    }
+    else if (parts.size() == 3) {
+        // Top, Horizontal, Bottom
+        val_top = parse_string_to_float(parts[0], 0);
+        float horizontal = parse_string_to_float(parts[1], 0);
+        val_bottom = parse_string_to_float(parts[2], 0);
+        val_left = val_right = horizontal;
+    }
+    else if (parts.size() >= 4) {
+        // Top, Right, Bottom, Left
+        val_top = parse_string_to_float(parts[0], 0);
+        val_right = parse_string_to_float(parts[1], 0);
+        val_bottom = parse_string_to_float(parts[2], 0);
+        val_left = parse_string_to_float(parts[3], 0);
+    }
+
+    return COMPUTED_STYLE::SPACING_VALUES{val_top, val_right, val_bottom, val_left};
+}
+
+// ============================================================================
+// Setter Initialization
+// ============================================================================
 void COMPUTED_STYLE::init_setters()
 {
     if (initialized)
@@ -159,53 +277,11 @@ void COMPUTED_STYLE::init_setters()
 
     setters["margin"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        std::vector<std::string> parts;
-        std::stringstream ss(value);
-        std::string part;
-
-        while (ss >> part)
-        {
-            parts.push_back(part);
-        }
-
-        if (parts.size() == 1)
-        {
-            // margin: 10px → all sides
-            float val = parse_string_to_float(parts[0], 0);
-            style.margin_top = val;
-            style.margin_right = val;
-            style.margin_bottom = val;
-            style.margin_left = val;
-        }
-        else if (parts.size() == 2)
-        {
-            // margin: 10px 20px → vertical horizontal
-            float vertical = parse_string_to_float(parts[0], 0);
-            float horizontal = parse_string_to_float(parts[1], 0);
-            style.margin_top = vertical;
-            style.margin_bottom = vertical;
-            style.margin_left = horizontal;
-            style.margin_right = horizontal;
-        }
-        else if (parts.size() == 3)
-        {
-            // margin: 10px 20px 30px → top horizontal bottom
-            float top = parse_string_to_float(parts[0], 0);
-            float horizontal = parse_string_to_float(parts[1], 0);
-            float bottom = parse_string_to_float(parts[2], 0);
-            style.margin_top = top;
-            style.margin_right = horizontal;
-            style.margin_bottom = bottom;
-            style.margin_left = horizontal;
-        }
-        else if (parts.size() >= 4)
-        {
-            // margin: 10px 20px 30px 40px → top right bottom left
-            style.margin_top = parse_string_to_float(parts[0], 0);
-            style.margin_right = parse_string_to_float(parts[1], 0);
-            style.margin_bottom = parse_string_to_float(parts[2], 0);
-            style.margin_left = parse_string_to_float(parts[3], 0);
-        }
+        auto spacing = COMPUTED_STYLE::parse_spacing_shorthand(value);
+        style.margin_top = spacing.top;
+        style.margin_right = spacing.right;
+        style.margin_bottom = spacing.bottom;
+        style.margin_left = spacing.left;
     };
 
     setters["padding-top"] = [](COMPUTED_STYLE &style, const std::string &value)
@@ -230,54 +306,11 @@ void COMPUTED_STYLE::init_setters()
 
     setters["padding"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        // Split by whitespace
-        std::vector<std::string> parts;
-        std::stringstream ss(value);
-        std::string part;
-
-        while (ss >> part) // Splits by whitespace
-        {
-            parts.push_back(part);
-        }
-
-        if (parts.size() == 1)
-        {
-            // padding: 10px → all sides
-            float val = parse_string_to_float(parts[0], 0);
-            style.padding_top = val;
-            style.padding_right = val;
-            style.padding_bottom = val;
-            style.padding_left = val;
-        }
-        else if (parts.size() == 2)
-        {
-            // padding: 10px 20px → vertical horizontal
-            float vertical = parse_string_to_float(parts[0], 0);
-            float horizontal = parse_string_to_float(parts[1], 0);
-            style.padding_top = vertical;
-            style.padding_bottom = vertical;
-            style.padding_left = horizontal;
-            style.padding_right = horizontal;
-        }
-        else if (parts.size() == 3)
-        {
-            // padding: 10px 20px 30px → top horizontal bottom
-            float top = parse_string_to_float(parts[0], 0);
-            float horizontal = parse_string_to_float(parts[1], 0);
-            float bottom = parse_string_to_float(parts[2], 0);
-            style.padding_top = top;
-            style.padding_right = horizontal;
-            style.padding_bottom = bottom;
-            style.padding_left = horizontal;
-        }
-        else if (parts.size() >= 4)
-        {
-            // padding: 10px 20px 30px 40px → top right bottom left
-            style.padding_top = parse_string_to_float(parts[0], 0);
-            style.padding_right = parse_string_to_float(parts[1], 0);
-            style.padding_bottom = parse_string_to_float(parts[2], 0);
-            style.padding_left = parse_string_to_float(parts[3], 0);
-        }
+        auto spacing = COMPUTED_STYLE::parse_spacing_shorthand(value);
+        style.padding_top = spacing.top;
+        style.padding_right = spacing.right;
+        style.padding_bottom = spacing.bottom;
+        style.padding_left = spacing.left;
     };
 
     setters["border-width"] = [](COMPUTED_STYLE &style, const std::string &value)
@@ -356,55 +389,17 @@ void COMPUTED_STYLE::init_setters()
 
     setters["display"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        if (value == "inline")
-        {
-            style.display = DISPLAY_TYPE::INLINE;
-        }
-
-        else if (value == "block")
-        {
-            style.display = DISPLAY_TYPE::BLOCK;
-        }
-
-        else
-        {
-            style.display = DISPLAY_TYPE::NONE;
-        }
+        style.display = COMPUTED_STYLE::parse_display_type(value);
     };
 
     setters["box-sizing"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        if (value == "border-box")
-        {
-            style.box_sizing = BOX_SIZING::BorderBox;
-        }
-        else
-        {
-            style.box_sizing = BOX_SIZING::ContentBox;
-        }
+        style.box_sizing = COMPUTED_STYLE::parse_box_sizing(value);
     };
 
     setters["text-align"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        if (value == "center")
-        {
-            style.text_align = TEXT_ALIGN::Center;
-        }
-
-        else if (value == "right")
-        {
-            style.text_align = TEXT_ALIGN::Right;
-        }
-
-        else if (value == "justify")
-        {
-            style.text_align = TEXT_ALIGN::Justify;
-        }
-
-        else
-        {
-            style.text_align = TEXT_ALIGN::Left;
-        }
+        style.text_align = COMPUTED_STYLE::parse_text_align(value);
     };
 
     setters["line-height"] = [](COMPUTED_STYLE &style, const std::string &value)
@@ -426,25 +421,7 @@ void COMPUTED_STYLE::init_setters()
 
     setters["text-decoration"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        if (value == "underline")
-        {
-            style.text_decoration = TEXT_DECORATION::UnderLine;
-        }
-
-        else if (value == "line-through")
-        {
-            style.text_decoration = TEXT_DECORATION::LineThrough;
-        }
-
-        else if (value == "overline")
-        {
-            style.text_decoration = TEXT_DECORATION::OverLine;
-        }
-
-        else
-        {
-            style.text_decoration = TEXT_DECORATION::None;
-        }
+        style.text_decoration = COMPUTED_STYLE::parse_text_decoration(value);
     };
 
     setters["opacity"] = [](COMPUTED_STYLE &style, const std::string &value)
@@ -458,22 +435,7 @@ void COMPUTED_STYLE::init_setters()
 
     setters["position"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        if (value == "relative")
-        {
-            style.position = POSITION_TYPE::Relative;
-        }
-        else if (value == "absolute")
-        {
-            style.position = POSITION_TYPE::Absolute;
-        }
-        else if (value == "fixed")
-        {
-            style.position = POSITION_TYPE::Fixed;
-        }
-        else
-        {
-            style.position = POSITION_TYPE::Static;
-        }
+        style.position = COMPUTED_STYLE::parse_position_type(value);
     };
 
     setters["top"] = [](COMPUTED_STYLE &style, const std::string &value)
