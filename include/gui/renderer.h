@@ -25,6 +25,11 @@ private:
 
     void paint_layout(QPainter &painter, const LAYOUT_BOX &box, float offset_x, float offset_y, const LAYOUT_BOX *parent_box = nullptr);
     void paint_fixed(QPainter &painter, const LAYOUT_BOX &box);
+    
+    // Helper functions for paint_layout
+    void draw_element_box(QPainter &painter, const LAYOUT_BOX &box, float abs_x, float abs_y);
+    void draw_text_node(QPainter &painter, const LAYOUT_BOX &box, float offset_x, float offset_y, const LAYOUT_BOX *parent_box);
+    
     void recalculate_layout();
     LAYOUT_BOX m_layout_tree;
     bool m_has_layout = false;

@@ -190,6 +190,128 @@ void Renderer::paintEvent(QPaintEvent *event)
     paint_layout(painter, m_layout_tree, 0, 0);
 }
 
+// ============================================================================
+// Rendering Helper Functions
+// ============================================================================
+
+/**
+ * \brief Draws the visual aspects of an element box (background, border, image).
+ * 
+ * Handles rendering the background color, border, and image content of a layout box.
+ * Text nodes are not handled by this function.
+ * 
+ * \param painter The QPainter to draw with.
+ * \param box The layout box to draw.
+ * \param abs_x The absolute x coordinate in viewport space.
+ * \param abs_y The absolute y coordinate in viewport space.
+ */
+void Renderer::draw_element_box(QPainter &painter, const LAYOUT_BOX &box, float abs_x, float abs_y)
+{
+    // Draw image if present
+    if (!box.image.isNull()) {
+        painter.drawPixmap(abs_x, abs_y, box.width, box.height, box.image);
+        return;
+    }
+    
+    // Draw background color
+    if (box.style.background_color != QColor("transparent")) {
+        painter.fillRect(abs_x, abs_y, box.width, box.height, box.style.background_color);
+    }
+
+    // Draw border
+    if (box.style.border_width > 0) {
+        QPen pen;
+        pen.setColor(box.style.border_color);
+        pen.setStyle(box.style.border_style);
+        pen.setWidthF(box.style.border_width);
+
+        painter.setPen(pen);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawRect(abs_x, abs_y, box.width, box.height);
+    }
+}
+
+/**
+ * \brief Draws text content with alignment, decoration, and special handling.
+ * 
+ * Renders text nodes with proper alignment (left/center/right), text decoration
+ * (underline/strikethrough/overline), and special rendering for list items (bullets).
+ * 
+ * \param painter The QPainter to draw with.
+ * \param box The text layout box to render.
+ * \param offset_x The x-offset of the parent in viewport coordinates.
+ * \param offset_y The y-offset of the parent in viewport coordinates.
+ * \param parent_box The parent element box for alignment calculations.
+ */
+void Renderer::draw_text_node(QPainter &painter, const LAYOUT_BOX &box, float offset_x, float offset_y, const LAYOUT_BOX *parent_box)
+{
+    QFont ft = box.style.to_font();
+    painter.setFont(ft);
+    painter.setPen(box.style.color);
+
+    QFontMetrics metrics(ft);
+
+    // Calculate text alignment offset
+    float offset_adjust = 0;
+    if (parent_box) {
+        float total_width = 0;
+        for (const auto &word_box : box.children) {
+            total_width += word_box.width;
+        }
+
+        if (parent_box->style.text_align == TEXT_ALIGN::Center) {
+            offset_adjust = (parent_box->width - total_width) / 2;
+        }
+        else if (parent_box->style.text_align == TEXT_ALIGN::Right) {
+            offset_adjust = parent_box->width - total_width;
+        }
+    }
+
+    // Draw bullet for list items
+    if (parent_box && parent_box->node->get_tag_name() == "li") {
+        painter.drawText(offset_x + box.x + offset_adjust, offset_y + box.y + metrics.ascent(), "•");
+        offset_adjust += 15;
+    }
+
+    // Draw each word with decoration
+    for (const auto &word_box : box.children) {
+        float word_abs_x = offset_x + word_box.x + offset_adjust;
+        float word_abs_y = offset_y + word_box.y;
+        float baseline_y = word_abs_y + metrics.ascent();
+
+        // Draw text
+        painter.drawText(word_abs_x, baseline_y, QString::fromStdString(word_box.text));
+
+        // Draw text decoration (underline, strikethrough, overline)
+        if (word_box.style.text_decoration != TEXT_DECORATION::None) {
+            QPen decoration_pen(box.style.color);
+            decoration_pen.setWidth(1);
+            painter.setPen(decoration_pen);
+
+            float decoration_y = 0;
+            switch (box.style.text_decoration) {
+            case TEXT_DECORATION::UnderLine:
+                decoration_y = baseline_y + 1;
+                break;
+            case TEXT_DECORATION::LineThrough:
+                decoration_y = word_abs_y + metrics.ascent() / 2;
+                break;
+            default:
+                decoration_y = word_abs_y;
+                break;
+            }
+
+            painter.drawLine(word_abs_x, decoration_y, word_abs_x + word_box.width, decoration_y);
+        }
+    }
+
+    painter.setPen(box.style.color);
+}
+
+// ============================================================================
+// Main Paint Layout
+// ============================================================================
+
 /**
  * \brief Recursively paints a layout box and its children.
  *
@@ -211,134 +333,39 @@ void Renderer::paint_layout(QPainter &painter, const LAYOUT_BOX &box, float offs
     float previous_opacity = painter.opacity();
     painter.setOpacity(previous_opacity * box.style.opacity);
 
-    if (box.style.position == POSITION_TYPE::Relative)
-    {
+    // Apply relative positioning offset
+    if (box.style.position == POSITION_TYPE::Relative) {
         abs_x += box.style.left - box.style.right;
         abs_y += box.style.top - box.style.bottom;
     }
 
-    if (box.node->get_type() == NODE_TYPE::ELEMENT)
-    {
-        if (!box.image.isNull())
-        {
-            painter.drawPixmap(abs_x, abs_y, box.width, box.height, box.image);
-            return;
-        }
-        if (box.style.background_color != QColor("transparent"))
-        {
-            painter.fillRect(
-                abs_x, abs_y,
-                box.width, box.height,
-                box.style.background_color);
-        }
-
-        if (box.style.border_width > 0)
-        {
-            QPen pen;
-            pen.setColor(box.style.border_color);
-            pen.setStyle(box.style.border_style);
-            pen.setWidthF(box.style.border_width);
-
-            painter.setPen(pen);
-            painter.setBrush(Qt::NoBrush);
-
-            painter.drawRect(abs_x, abs_y, box.width, box.height);
-        }
+    // Draw element-specific content (background, border, image)
+    if (box.node->get_type() == NODE_TYPE::ELEMENT) {
+        draw_element_box(painter, box, abs_x, abs_y);
     }
 
-    if (box.node->get_type() == NODE_TYPE::TEXT)
-    {
-        QFont ft = box.style.to_font();
-        painter.setFont(ft);
-        painter.setPen(box.style.color);
-
-        QFontMetrics metrics(ft);
-
-        float offset_adjust = 0;
-
-        if (parent_box)
-        {
-            float total_width = 0;
-            for (const auto &word_box : box.children)
-            {
-                total_width += word_box.width;
-            }
-
-            if (parent_box->style.text_align == TEXT_ALIGN::Center)
-            {
-                offset_adjust = (parent_box->width - total_width) / 2;
-            }
-
-            else if (parent_box->style.text_align == TEXT_ALIGN::Right)
-            {
-                offset_adjust = parent_box->width - total_width;
-            }
-        }
-
-        if (parent_box && parent_box->node->get_tag_name() == "li")
-        {
-            painter.drawText(offset_x + box.x + offset_adjust, offset_y + box.y + metrics.ascent(), "•");
-            offset_adjust += 15;
-        }
-
-        for (const auto &word_box : box.children)
-        {
-            float word_abs_x = offset_x + word_box.x + offset_adjust;
-            float word_abs_y = offset_y + word_box.y;
-            float baseline_y = word_abs_y + metrics.ascent();
-
-            painter.drawText(word_abs_x, baseline_y, QString::fromStdString(word_box.text));
-
-            if (word_box.style.text_decoration != TEXT_DECORATION::None)
-            {
-                QPen decoration_pen(box.style.color);
-
-                decoration_pen.setWidth(1);
-                painter.setPen(decoration_pen);
-
-                float decoration_y = 0;
-
-                switch (box.style.text_decoration)
-                {
-                case TEXT_DECORATION::UnderLine:
-                    decoration_y = baseline_y + 1;
-                    break;
-
-                case TEXT_DECORATION::LineThrough:
-                    decoration_y = word_abs_y + metrics.ascent() / 2;
-                    break;
-
-                default:
-                    decoration_y = word_abs_y;
-                    break;
-                }
-
-                painter.drawLine(word_abs_x, decoration_y, word_abs_x + word_box.width, decoration_y);
-            }
-        }
-
-        painter.setPen(box.style.color);
-
+    // Draw text node content (with alignment, decoration, bullets)
+    if (box.node->get_type() == NODE_TYPE::TEXT) {
+        draw_text_node(painter, box, offset_x, offset_y, parent_box);
+        painter.setOpacity(previous_opacity);
         return;
     }
 
-    for (const auto &child : box.children)
-    {
+    // Recursively paint children
+    for (const auto &child : box.children) {
         paint_layout(painter, child, abs_x, abs_y, &box);
     }
 
-    for (const auto &abs_child : box.absolute_children)
-    {
-        if (abs_child.style.position == POSITION_TYPE::Fixed)
-        {
+    // Paint positioned children (absolute/fixed)
+    for (const auto &abs_child : box.absolute_children) {
+        if (abs_child.style.position == POSITION_TYPE::Fixed) {
             paint_fixed(painter, abs_child);
-        }
-
-        else
-        {
+        } else {
             paint_layout(painter, abs_child, abs_x, abs_y, &box);
         }
     }
+
+    painter.setOpacity(previous_opacity);
 }
 
 /**
