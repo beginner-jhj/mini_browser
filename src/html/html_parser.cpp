@@ -79,7 +79,9 @@ std::shared_ptr<NODE> parse(const std::vector<TOKEN> &tokens)
 
         else
         {
-            stack.pop_back();
+            if(!stack.empty()){
+                stack.pop_back();
+            }
         }
     }
 
